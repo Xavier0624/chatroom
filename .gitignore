@@ -1,0 +1,21 @@
+# 编译生成的可执行文件
+server
+console/client
+qt/build/chatroom_qt
+
+# C++ 编译产物
+*.o
+*.so
+*.a
+
+# Qt 自动生成的文件
+moc_*
+ui_*
+qrc_*
+*.pro.user
+.qmake.stash
+Makefile
+
+# 临时文件
+*~
+*.swp
