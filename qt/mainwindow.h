@@ -7,13 +7,16 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLabel>
+#include <QHBoxLayout>
+#include <QListWidget>
+#include <QSplitter>
 
 class QtChatClient;
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    explicit MainWindow(QtChatClient *client, QWidget *parent = nullptr);
+    explicit MainWindow(QtChatClient *client, const QString& myName, QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -23,11 +26,16 @@ private slots:
     void appendSystemNotice(const QString& text);
     void onConnectionLost();
 
+protected:
+    void closeEvent(QCloseEvent *event) override;
+
 private:
     QtChatClient* chatClient;
     QTextEdit* chatView;
     QLineEdit* inputLine;
     QPushButton* sendBtn;
+    QListWidget* userList;
+    QString myUsername;
 };
 
 #endif

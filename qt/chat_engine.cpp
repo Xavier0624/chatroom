@@ -1,6 +1,7 @@
 #include "chat_engine.h"
 #include <iostream>
 #include <cstring>
+#include <sstream>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -41,6 +42,8 @@ void ChatClient::login(const std::string &username)
     // TODO 构造函数传参
     recvThread = new std::thread(&ChatClient::recvLoop, this);
     recvThread->detach();
+
+    onUserJoined(username);
 }
 
 void ChatClient::sendPublicMessage(const std::string &text)
@@ -85,10 +88,33 @@ void ChatClient::recvLoop()
 
         if (msg.empty()) continue;
 
+
         // 协议解析
+
+        // 用户列表解析
+        if (msg.find("USER_LIST ") == 0) {
+            std::string nameList = msg.substr(strlen("USER_LIST "));
+            std::istringstream iss(nameList);
+            std::string name;
+            while (iss >> name) {
+                onUserJoined(name);
+            }
+            continue;
+        }
+
         if (msg.find("系统: ") == 0) {
             // 系统通知，例如 "系统: Alice 进入了聊天室"
-            onSystemNotice(msg.substr(sizeof("系统: ") - 1)); // 注意去掉前缀长度
+            std::string content = msg.substr(sizeof("系统: ") - 1);
+            onSystemNotice(content); // 注意去掉前缀长度
+
+            if (content.find("进入了聊天室") != std::string::npos) {
+                std::string name = content.substr(0, content.find(" 进入了聊天室"));
+                if (!name.empty())  onUserJoined(name);
+            } else if (content.find("离开了聊天室") != std::string::npos) {
+                std::string name = content.substr(0, content.find(" 离开了聊天室"));
+                if (!name.empty())  onUserLeft(name);
+            }
+            continue;
         }
         else if (msg.find("[私聊] ") == 0) {
             // 私聊格式: [私聊] Alice 对你说: hello

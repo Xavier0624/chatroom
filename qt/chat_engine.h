@@ -33,6 +33,8 @@ public:
     virtual void onPrivateMessage(const std::string& sender, const std::string& message) = 0;  // 私密消息
     virtual void onSystemNotice(const std::string& text) = 0;    // 系统通知
     virtual void onDisconnected() = 0;    // 连接断开
+    virtual void onUserJoined(const std::string& name) {}
+    virtual void onUserLeft(const std::string& name) {}
 
     int getSockfd() const {
         return sockfd;

@@ -31,4 +31,11 @@ void QtChatClient::onDisconnected()
     emit connectionLost();
 }
 
+void QtChatClient::onUserJoined(const std::string &name) {
+    emit userJoined(QString::fromStdString(name));
+}
 
+void QtChatClient::onUserLeft(const std::string &name)
+{
+    emit userLeft(QString::fromStdString(name));
+}

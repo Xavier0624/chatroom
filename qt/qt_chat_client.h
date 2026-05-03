@@ -16,6 +16,9 @@ public:
     void onPrivateMessage(const std::string& sender, const std::string& message) override;
     void onSystemNotice(const std::string& text) override;
     void onDisconnected() override;
+    void onUserJoined(const std::string& name) override;
+    void onUserLeft(const std::string& name) override;
+    
 
 signals:
     // 通知 GUI 更新信号
@@ -23,6 +26,8 @@ signals:
     void newPrivateMessage(QString sender, QString message);
     void newSystemNotice(QString text);
     void connectionLost();
+    void userJoined(QString name);
+    void userLeft(QString name);
 };
 
 

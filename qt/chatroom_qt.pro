@@ -10,10 +10,12 @@ TEMPLATE = app
 SOURCES += main.cpp \
            mainwindow.cpp \
            qt_chat_client.cpp \
-           chat_engine.cpp
+           chat_engine.cpp \
+           logindialog.cpp
 
 HEADERS += mainwindow.h \
            qt_chat_client.h \
-           chat_engine.h
+           chat_engine.h \
+           logindialog.h
 
 LIBS += -lpthread

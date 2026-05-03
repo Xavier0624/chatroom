@@ -54,7 +54,15 @@ void handle_client(int client_fd) {
     std::string msg = "系统: " + username + " 进入了聊天室！\n";
     broadcast(msg, client_fd);
 
-
+    std::string userListMsg = "USER_LIST";
+    {
+        std::lock_guard<std::mutex> lock(clients_mutex);
+        for (const auto& c : clients) {
+            userListMsg += " " + c.name;
+        }
+    }
+    userListMsg += '\n';
+    write(client_fd, userListMsg.c_str(), userListMsg.size());
 
     // TODO: 处理消息获取循环
 
@@ -113,7 +121,7 @@ void handle_client(int client_fd) {
         std::cout << "用户：" << username << " ,fd: " << client_fd << " 离开聊天室！当前人数: " << clients.size() << std::endl;
     }
     
-    std::string leaveing_msg = "系统: 用户 " + username + " 离开群聊！";
+    std::string leaveing_msg = "系统: " + username + " 离开了聊天室！";
     broadcast(leaveing_msg);
     close(client_fd);
 }
