@@ -28,6 +28,7 @@ public:
 
     // 纯虚函数 回调接口
     virtual void onConnected() = 0;     // 连接成功
+    virtual void onLoginFailed(const std::string& reason) {}
     virtual void onLoginSuccess() = 0;  // 登录成功
     virtual void onMessageReceived(const std::string& sender, const std::string& message) = 0; // 公开消息
     virtual void onPrivateMessage(const std::string& sender, const std::string& message) = 0;  // 私密消息
@@ -35,7 +36,6 @@ public:
     virtual void onDisconnected() = 0;    // 连接断开
     virtual void onUserJoined(const std::string& name) {}
     virtual void onUserLeft(const std::string& name) {}
-
     int getSockfd() const {
         return sockfd;
     }   
@@ -53,4 +53,5 @@ protected:
     int sockfd;
     std::atomic<bool> running;
     std::thread* recvThread;
+    bool receivedStarted = false;
 };

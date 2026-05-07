@@ -18,6 +18,7 @@ class MainWindow : public QMainWindow {
 public:
     explicit MainWindow(QtChatClient *client, const QString& myName, QWidget *parent = nullptr);
     ~MainWindow();
+    void setMyUsername(const QString& name);
 
 private slots:
     void onSendClicked();

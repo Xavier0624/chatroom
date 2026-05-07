@@ -7,10 +7,6 @@ void QtChatClient::onConnected() {
 
 }
 
-void QtChatClient::onLoginSuccess()
-{
-}
-
 void QtChatClient::onMessageReceived(const std::string &sender, const std::string &message)
 {
     emit newPublicMessage(QString::fromStdString(sender), QString::fromStdString(message));
@@ -38,4 +34,14 @@ void QtChatClient::onUserJoined(const std::string &name) {
 void QtChatClient::onUserLeft(const std::string &name)
 {
     emit userLeft(QString::fromStdString(name));
+}
+
+void QtChatClient::onLoginFailed(const std::string &reason)
+{
+    emit loginFailed(QString::fromStdString(reason));
+}
+
+void QtChatClient::onLoginSuccess()
+{
+    emit loginSuccess();
 }

@@ -18,6 +18,8 @@ public:
     void onDisconnected() override;
     void onUserJoined(const std::string& name) override;
     void onUserLeft(const std::string& name) override;
+    void onLoginFailed(const std::string& reason) override;
+
     
 
 signals:
@@ -28,6 +30,8 @@ signals:
     void connectionLost();
     void userJoined(QString name);
     void userLeft(QString name);
+    void loginFailed(QString reason);
+    void loginSuccess();
 };
 
 

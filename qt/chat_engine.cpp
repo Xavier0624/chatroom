@@ -35,15 +35,14 @@ bool ChatClient::connectToServer(const std::string &ip, int host)
 
 void ChatClient::login(const std::string &username)
 {
+    if (!receivedStarted) {
+        receivedStarted = true;
+        // TODO 构造函数传参
+        recvThread = new std::thread(&ChatClient::recvLoop, this);
+        recvThread->detach();
 
-    std::string message = username + '\n';
-    sendRaw(message);
-
-    // TODO 构造函数传参
-    recvThread = new std::thread(&ChatClient::recvLoop, this);
-    recvThread->detach();
-
-    onUserJoined(username);
+    }
+    sendRaw(username + '\n');
 }
 
 void ChatClient::sendPublicMessage(const std::string &text)
@@ -90,9 +89,10 @@ void ChatClient::recvLoop()
 
 
         // 协议解析
-
+        std::cerr << "[recvLoop] 收到的消息: " << msg << std::endl;
         // 用户列表解析
         if (msg.find("USER_LIST ") == 0) {
+            onLoginSuccess();
             std::string nameList = msg.substr(strlen("USER_LIST "));
             std::istringstream iss(nameList);
             std::string name;
@@ -106,6 +106,10 @@ void ChatClient::recvLoop()
             // 系统通知，例如 "系统: Alice 进入了聊天室"
             std::string content = msg.substr(sizeof("系统: ") - 1);
             onSystemNotice(content); // 注意去掉前缀长度
+
+            if (content.find("用户名已经存在") != std::string::npos) {
+                onLoginFailed(content);
+            }
 
             if (content.find("进入了聊天室") != std::string::npos) {
                 std::string name = content.substr(0, content.find(" 进入了聊天室"));

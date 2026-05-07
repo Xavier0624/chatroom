@@ -1,9 +1,12 @@
 #include <QApplication>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QTimer>
+#include <QDebug>
 #include "mainwindow.h"
 #include "qt_chat_client.h"
 #include "logindialog.h"
+
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
@@ -57,18 +60,67 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    LoginDialog loginDialog;
-    if (loginDialog.exec() != QDialog::Accepted) {
-        return 0;
+    MainWindow win(&client, QString());
+
+
+    QString username;
+    bool loginSuccess = false;
+
+    QObject::connect(&client, &QtChatClient::loginFailed, [&](const QString& reason) {
+        QMessageBox::warning(nullptr, "登录失败", reason);
+    });
+
+    while (!loginSuccess) {
+        LoginDialog loginDialog;
+        if (loginDialog.exec() != QDialog::Accepted) {
+            return 0;
+        }
+        username = loginDialog.username().trimmed();
+
+
+        QEventLoop loop;
+        bool ok = false;
+        bool fail = false;
+
+        QMetaObject::Connection c1 = QObject::connect(&client, &QtChatClient::loginSuccess, [&]() {
+            ok = true;
+            loop.quit();
+        });
+
+        QMetaObject::Connection c2 = QObject::connect(&client, &QtChatClient::loginFailed, [&](const QString& reason) {
+            fail = true;
+            loop.quit();
+        });
+
+        client.login(username.toStdString());
+
+        QTimer timer;
+        timer.setSingleShot(true);
+        QObject::connect(&timer, &QTimer::timeout, [&]() {
+            qDebug() << "timeout" << endl;
+            loop.quit();
+        });
+        timer.start(5000);
+        loop.exec();
+
+        QObject::disconnect(c1);
+        QObject::disconnect(c2);
+
+        if (ok) {
+            loginSuccess = true;
+            win.setMyUsername(username);
+            win.show();
+
+        }
+        
     }
-    QString username = loginDialog.username();
 
 
 
-    MainWindow win(&client, username);
-    win.show();
 
-    client.login(username.toStdString());
+
+
+
 
     return app.exec();
 }

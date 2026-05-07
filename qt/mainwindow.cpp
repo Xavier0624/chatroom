@@ -89,6 +89,21 @@ MainWindow::MainWindow(QtChatClient* client, const QString& myName, QWidget* par
 
 MainWindow::~MainWindow() {}
 
+void MainWindow::setMyUsername(const QString &name)
+{
+    myUsername = name;
+    for (int i = 0; i < userList->count(); ++ i) {
+        QListWidgetItem *item = userList->item(i);
+        if (item->text() == myUsername) {
+            QFont boldFont = item->font();
+            boldFont.setBold(true);
+            item->setFont(boldFont);
+            userList->insertItem(0, userList->takeItem(i));
+            break;
+        }
+    }
+}
+
 void MainWindow::appendPublicMessage(const QString &sender, const QString &message)
 {
     QString time = QDateTime::currentDateTime().toString("hh:mm");

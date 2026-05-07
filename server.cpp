@@ -32,18 +32,41 @@ void broadcast(const std::string& message, int sender_fd = -1) {
 
 void handle_client(int client_fd) {
 
-    std::string welcome = "请输入用户名：";
-    write(client_fd, welcome.c_str(), welcome.size());
+    std::string username;
+    while (true) {
+        char name_buf[64] = {0};
+        int len = read(client_fd, name_buf, sizeof(name_buf) - 1);
+        if (len <= 0) {
+            // TODO: 更好的错误处理
+            close(client_fd);
+            return;
+        }
+        username.assign(name_buf, len);
+        if (username.back() == '\n') username.pop_back();
+        if (username.empty() || username.find_first_not_of(" \t") == std::string::npos) {
+            std::string err = "用户名不可为空，请重新输入\n";
+            write(client_fd, err.c_str(), err.size());
+            continue;
+        }
 
-    char name_buf[64] = {0};
-    int len = read(client_fd, name_buf, sizeof(name_buf) - 1);
-    if (len <= 0) {
-        // TODO: 更好的错误处理
-        close(client_fd);
-        return;
+        bool exist = false;
+        {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            for (const auto& c : clients) {
+                if (c.name == username) {
+                    exist = true;
+                    break;
+                }
+            }
+        }
+        if (exist) {
+            std::string reject = "系统: 用户名已经存在，请重新输入\n";
+            write(client_fd, reject.c_str(), reject.size());
+            continue;
+        }
+        break;
     }
-    std::string username(name_buf);
-    if (username.back() == '\n') username.pop_back();
+
 
 
     {
@@ -51,6 +74,7 @@ void handle_client(int client_fd) {
         clients.push_back({username, client_fd});
         std::cout << "用户: " << username << " ,fd: " << client_fd << " 加入聊天室！当前人数: " << clients.size() << std::endl;
     }
+
     std::string msg = "系统: " + username + " 进入了聊天室！\n";
     broadcast(msg, client_fd);
 
@@ -118,7 +142,7 @@ void handle_client(int client_fd) {
         clients.erase(std::remove_if(clients.begin(), clients.end(), [&client_fd](const ClientInfo& c) {
             return c.fd == client_fd;
         }), clients.end());
-        std::cout << "用户：" << username << " ,fd: " << client_fd << " 离开聊天室！当前人数: " << clients.size() << std::endl;
+        std::cout << "用户: " << username << " ,fd: " << client_fd << " 离开聊天室！当前人数: " << clients.size() << std::endl;
     }
     
     std::string leaveing_msg = "系统: " + username + " 离开了聊天室！";
