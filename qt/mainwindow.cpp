@@ -152,10 +152,12 @@ void MainWindow::onSendClicked() {
             QString target = text.mid(1, spacePos - 1);
             QString msg = text.mid(spacePos + 1);
             chatClient->sendPrivateMessage(target.toStdString(), msg.toStdString());
-
+            
+            appendPrivateMessage("你", QString("对 %1 说: %2").arg(target, msg));
         }
     } else {
             chatClient->sendPublicMessage(text.toStdString());
+            appendPublicMessage(myUsername, text);
     }
     inputLine->clear();
     inputLine->setFocus();
